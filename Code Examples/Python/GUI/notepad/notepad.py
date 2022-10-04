@@ -1,188 +1,360 @@
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtPrintSupport import *
-
-import os
-import sys
-
-
-class MainWindow(QMainWindow):
-
-    def __init__(self, *args, **kwargs):
-        super(MainWindow, self).__init__(*args, **kwargs)
-
-        layout = QVBoxLayout()
-        self.editor = QPlainTextEdit()  # Could also use a QTextEdit and set self.editor.setAcceptRichText(False)
+from tkinter import *
+import tkinter as tk
+from tkinter.scrolledtext import ScrolledText
+from tkinter import filedialog
+from tkinter import messagebox,font
+from tkinter import ttk
+from datetime import datetime
+import webbrowser
 
 
-        # Setup the QTextEdit editor configuration
-        fixedfont = QFontDatabase.systemFont(QFontDatabase.FixedFont)
-        fixedfont.setPointSize(12)
-        self.editor.setFont(fixedfont)
+#======================================================================================
+#  ========================== File Code Starts Here  ============================
+#=======================================================================================
 
-        # self.path holds the path of the currently open file.
-        # If none, we haven't got a file open yet (or creating new).
-        self.path = None
 
-        layout.addWidget(self.editor)
+#=================================== New Code  ======================================
+def new():
+        text.delete('1.0','end')
+#===================================== End =========================================
 
-        container = QWidget()
-        container.setLayout(layout)
-        self.setCentralWidget(container)
 
-        self.status = QStatusBar()
-        self.setStatusBar(self.status)
+# ========================= New Window Code  ================================
+def new_window():
+        root = tk.Tk()
+        root.geometry('500x500')
 
-        file_toolbar = QToolBar("File")
-        file_toolbar.setIconSize(QSize(14, 14))
-        self.addToolBar(file_toolbar)
-        file_menu = self.menuBar().addMenu("&File")
 
-        open_file_action = QAction(QIcon(os.path.join('images', 'blue-folder-open-document.png')), "Open file...", self)
-        open_file_action.setStatusTip("Open file")
-        open_file_action.triggered.connect(self.file_open)
-        file_menu.addAction(open_file_action)
-        file_toolbar.addAction(open_file_action)
+        menubar = Menu(root)
 
-        save_file_action = QAction(QIcon(os.path.join('images', 'disk.png')), "Save", self)
-        save_file_action.setStatusTip("Save current page")
-        save_file_action.triggered.connect(self.file_save)
-        file_menu.addAction(save_file_action)
-        file_toolbar.addAction(save_file_action)
+        file = Menu(menubar,tearoff = 0)
+        file.add_command(label="New",command=new)
+        file.add_command(label="New window",command=new_window)
+        file.add_command(label="Open",command=Open)
+        file.add_command(label="Save",command=save)
+        file.add_command(label="Save as", command=save_as)
+        file.add_separator()
+        file.add_command(label="Exit",command=exit)
+        menubar.add_cascade(label="File",menu=file,font=('verdana',10,'bold'))
 
-        saveas_file_action = QAction(QIcon(os.path.join('images', 'disk--pencil.png')), "Save As...", self)
-        saveas_file_action.setStatusTip("Save current page to specified file")
-        saveas_file_action.triggered.connect(self.file_saveas)
-        file_menu.addAction(saveas_file_action)
-        file_toolbar.addAction(saveas_file_action)
 
-        print_action = QAction(QIcon(os.path.join('images', 'printer.png')), "Print...", self)
-        print_action.setStatusTip("Print current page")
-        print_action.triggered.connect(self.file_print)
-        file_menu.addAction(print_action)
-        file_toolbar.addAction(print_action)
 
-        edit_toolbar = QToolBar("Edit")
-        edit_toolbar.setIconSize(QSize(16, 16))
-        self.addToolBar(edit_toolbar)
-        edit_menu = self.menuBar().addMenu("&Edit")
+        edit = Menu(menubar,tearoff = 0)
 
-        undo_action = QAction(QIcon(os.path.join('images', 'arrow-curve-180-left.png')), "Undo", self)
-        undo_action.setStatusTip("Undo last change")
-        undo_action.triggered.connect(self.editor.undo)
-        edit_menu.addAction(undo_action)
+        edit.add_command(label="Undo",command=undo)
+        edit.add_separator()
+        edit.add_command(label="Cut",command=cut)
+        edit.add_command(label="Copy",command=copy)
+        edit.add_command(label="Paste",command=paste)
+        edit.add_command(label="Delete",command=delete)
+        edit.add_command(label="Select All",accelerator="Ctrl+A",command=select_all)
+        edit.add_command(label="Time/Date",accelerator="F5",command=time)
+        menubar.add_cascade(label="Edit",menu=edit)
 
-        redo_action = QAction(QIcon(os.path.join('images', 'arrow-curve.png')), "Redo", self)
-        redo_action.setStatusTip("Redo last change")
-        redo_action.triggered.connect(self.editor.redo)
-        edit_toolbar.addAction(redo_action)
-        edit_menu.addAction(redo_action)
 
-        edit_menu.addSeparator()
+        Format = Menu(menubar, tearoff = 0)
 
-        cut_action = QAction(QIcon(os.path.join('images', 'scissors.png')), "Cut", self)
-        cut_action.setStatusTip("Cut selected text")
-        cut_action.triggered.connect(self.editor.cut)
-        edit_toolbar.addAction(cut_action)
-        edit_menu.addAction(cut_action)
+        Format.add_command(label="Word Wrap")
+        Format.add_command(label="Font...", command=fonts)
 
-        copy_action = QAction(QIcon(os.path.join('images', 'document-copy.png')), "Copy", self)
-        copy_action.setStatusTip("Copy selected text")
-        copy_action.triggered.connect(self.editor.copy)
-        edit_toolbar.addAction(copy_action)
-        edit_menu.addAction(copy_action)
+        menubar.add_cascade(label="Format",menu=Format)
 
-        paste_action = QAction(QIcon(os.path.join('images', 'clipboard-paste-document-text.png')), "Paste", self)
-        paste_action.setStatusTip("Paste from clipboard")
-        paste_action.triggered.connect(self.editor.paste)
-        edit_toolbar.addAction(paste_action)
-        edit_menu.addAction(paste_action)
 
-        select_action = QAction(QIcon(os.path.join('images', 'selection-input.png')), "Select all", self)
-        select_action.setStatusTip("Select all text")
-        select_action.triggered.connect(self.editor.selectAll)
-        edit_menu.addAction(select_action)
 
-        edit_menu.addSeparator()
+        Help = Menu(menubar, tearoff = 0)
 
-        wrap_action = QAction(QIcon(os.path.join('images', 'arrow-continue.png')), "Wrap text to window", self)
-        wrap_action.setStatusTip("Toggle wrap text to window")
-        wrap_action.setCheckable(True)
-        wrap_action.setChecked(True)
-        wrap_action.triggered.connect(self.edit_toggle_wrap)
-        edit_menu.addAction(wrap_action)
+        Help.add_command(label="View Help",command=view_help)
+        Help.add_command(label="Send FeedBack",command=send_feedback)
+        Help.add_command(label="About Notepad")
 
-        self.update_title()
-        self.show()
+        menubar.add_cascade(label="Help",menu=Help)
 
-    def dialog_critical(self, s):
-        dlg = QMessageBox(self)
-        dlg.setText(s)
-        dlg.setIcon(QMessageBox.Critical)
-        dlg.show()
 
-    def file_open(self):
-        path, _ = QFileDialog.getOpenFileName(self, "Open file", "", "Text documents (*.txt);All files (*.*)")
+        root.config(menu=menubar)
 
-        if path:
-            try:
-                with open(path, 'rU') as f:
-                    text = f.read()
 
-            except Exception as e:
-                self.dialog_critical(str(e))
 
-            else:
-                self.path = path
-                self.editor.setPlainText(text)
-                self.update_title()
 
-    def file_save(self):
-        if self.path is None:
-            # If we do not have a path, we need to use Save As.
-            return self.file_saveas()
 
-        self._save_to_path(self.path)
+        text = ScrolledText(root,width=1000,height=1000)
+        text.place(x=0,y=0)
 
-    def file_saveas(self):
-        path, _ = QFileDialog.getSaveFileName(self, "Save file", "", "Text documents (*.txt);All files (*.*)")
 
-        if not path:
-            # If dialog is cancelled, will return ''
-            return
 
-        self._save_to_path(path)
+        root.mainloop()
 
-    def _save_to_path(self, path):
-        text = self.editor.toPlainText()
-        try:
-            with open(path, 'w') as f:
-                f.write(text)
+# =========================== End ==============================================        
 
-        except Exception as e:
-            self.dialog_critical(str(e))
 
+# ===================== Open File Code ========================================
+def Open():
+        root.filename = filedialog.askopenfilename(
+                initialdir = '/',
+                title="Select file",
+                filetypes=(("jpeg files","*.jpg"),("all files","*.*")))
+        file = open(root.filename)
+        text.insert('end',file.read())
+#================================= End ==========================================
+
+
+#================================ Save File Code ====================================
+def save():
+        pass
+#================================    End      =======================================
+
+#=================================== save as File code  ==============================
+def save_as():
+        root.filename = filedialog.asksaveasfile(mode="w",defaultextension='.txt')
+        if root.filename is None:
+                return
+        file_save =  str(text.get(1.0,END))
+        root.filename.write(file_save)
+        root.filename.close()
+# ================================ End ============================================
+
+# ================================ Exit Code =====================================
+def exit():
+        message = messagebox.askquestion('Notepad',"Do you want to save changes")
+        if message == "yes":
+                save_as()
         else:
-            self.path = path
-            self.update_title()
-
-    def file_print(self):
-        dlg = QPrintDialog()
-        if dlg.exec_():
-            self.editor.print_(dlg.printer())
-
-    def update_title(self):
-        self.setWindowTitle("%s - No2Pads" % (os.path.basename(self.path) if self.path else "Untitled"))
-
-    def edit_toggle_wrap(self):
-        self.editor.setLineWrapMode( 1 if self.editor.lineWrapMode() == 0 else 0 )
+                root.destroy()
+#==================================== end =========================================
 
 
-if __name__ == '__main__':
 
-    app = QApplication(sys.argv)
-    app.setApplicationName("No2Pads")
 
-    window = MainWindow()
-    app.exec_()
+#======================================================================================
+# ======================= Edit Code Starts Here  ============================
+#=======================================================================================
+
+#=========================== Cut code =============================
+def cut():
+        text.event_generate("<<Cut>>")
+
+#=========================== End code =====================================
+
+#=========================== Cut code =============================
+def copy():
+        text.event_generate("<<Copy>>")
+
+#=========================== End code =====================================
+
+#=========================== Cut code =============================
+def paste():
+        text.event_generate("<<Paste>>")
+
+#=========================== End code =====================================
+
+
+#=========================== Delete all code =============================
+def delete():
+        message = messagebox.askquestion('Notepad',"Do you want to Delete all")
+        if message == "yes":
+                text.delete('1.0','end')
+        else:
+               return "break"
+
+       
+#=========================== End code =====================================
+
+
+#=========================== select all code =============================
+def select_all():
+        text.tag_add('sel','1.0','end')
+        return 'break'
+#=========================== End code =============================
+
+
+#=========================== Time/Date code =============================
+def time():
+        d = datetime.now()
+        text.insert('end',d)
+        
+#=========================== End code =============================
+
+
+
+#======================================================================================
+# ======================= Edit Code Ends Here  ============================
+#=======================================================================================
+
+
+
+
+#======================================================================================
+# ======================= Format Code Starts Here  ============================
+#=======================================================================================
+
+
+def fonts():
+        root = tk.Tk()
+        root.geometry('400x400')
+        root.title('Font')
+
+        l1 = Label(root,text="Font:")
+        l1.place(x=10,y=10)
+        f = tk.StringVar() 
+        fonts = ttk.Combobox(root, width = 15, textvariable = f, state='readonly',font=('verdana',10,'bold'),) 
+        fonts['values'] = font.families()
+        fonts.place(x=10,y=30)
+        fonts.current(0) 
+
+
+        l2 = Label(root,text="Font Style:")
+        l2.place(x=180,y=10)
+        st = tk.StringVar() 
+        style = ttk.Combobox(root, width = 15, textvariable = st, state='readonly',font=('verdana',10,'bold'),) 
+        style['values'] = ('bold','bold italic','italic')
+        style.place(x=180,y=30)
+        style.current(0) 
+
+        l3 = Label(root,text="Size:")
+        l3.place(x=350,y=10)
+        sz = tk.StringVar() 
+        size = ttk.Combobox(root, width = 2, textvariable = sz, state='readonly',font=('verdana',10,'bold'),) 
+        
+        size['values'] = (8,9,10,12,15,20,23,25,27,30,35,40,43,47,50,55,65,76,80,90,100,150,200,255,300)
+        size.place(x=350,y=30)
+        size.current(0) 
+               
+              
+        sample = LabelFrame(root,text="Sample",height=100,width=200)
+        sample['font'] = (fonts.get(),size.get(),style.get())
+        sample.place(x=180,y=220)
+
+        l4 = Label(sample,text="This is sample")
+        l4.place(x=20,y=30)
+
+
+
+        def OK():
+
+               text['font'] = (fonts.get(),size.get(),style.get())
+               root.destroy()
+               
+
+        ok = Button(root,text="OK",relief=RIDGE,borderwidth=2,padx=20,highlightcolor="blue",command=OK)
+        ok.place(x=137,y=350)
+
+        def Apl():
+                l4['font'] = (fonts.get(),size.get(),style.get())
+
+        Apply = Button(root,text="Apply",relief=RIDGE,borderwidth=2,padx=20,highlightcolor="blue",command=Apl)
+        Apply.place(x=210,y=350)        
+
+        def Cnl():
+                root.destroy()
+
+        cancel = Button(root,text="Cancel",relief=RIDGE,borderwidth=2,padx=20,command=Cnl)
+        cancel.place(x=295,y=350)
+        root.mainloop()
+
+
+#======================================================================================
+# ======================= Format Code Ends Here  ============================
+#=======================================================================================
+
+#======================================================================================
+# ======================= Help Code Ends Here  ============================
+#=======================================================================================
+
+# ======================   View Help ===================================
+def view_help():
+        webbrowser.open('#')
+
+#============================= End =======================================
+
+# ======================   View Help ===================================
+def send_feedback():
+        webbrowser.open('#')
+
+#============================= End =======================================
+
+
+#======================================================================================
+# ======================= Help Code Ends Here  ============================
+#=======================================================================================
+
+
+# ============================= Main Window =============================
+
+root = tk.Tk()
+root.geometry('600x300')
+root.minsize(200,100)
+root.title('notepad')
+root.iconbitmap('notepad.ico')
+text = ScrolledText(root,height=1000,undo=True)
+text.pack(fill=tk.BOTH)
+
+menubar = Menu(root)
+
+file = Menu(menubar,tearoff = 0)
+file.add_command(label="New",command=new)
+file.add_command(label="New window",command=new_window)
+file.add_command(label="Open",command=Open)
+file.add_command(label="Save",command=save)
+file.add_command(label="Save as", command=save_as)
+file.add_separator()
+file.add_command(label="Exit",command=exit)
+menubar.add_cascade(label="File",menu=file,font=('verdana',10,'bold'))
+
+
+
+edit = Menu(menubar,tearoff = 0)
+
+edit.add_command(label="Undo",accelerator="Ctrl+Z",command=text.edit_undo)
+edit.add_command(label="Redo",accelerator="Ctrl+Y",command=text.edit_redo)
+edit.add_separator()
+edit.add_command(label="Cut",accelerator="Ctrl+X",command=cut)
+edit.add_command(label="Copy",accelerator="Ctrl+C",command=copy)
+edit.add_command(label="Paste",accelerator="Ctrl+V",command=paste)
+edit.add_command(label="Delete",accelerator="Del",command=delete)
+edit.add_command(label="Select All",accelerator="Ctrl+A",command=select_all)
+edit.add_command(label="Time/Date",accelerator="F5",command=time)
+menubar.add_cascade(label="Edit",menu=edit)
+
+
+Format = Menu(menubar, tearoff = 0)
+
+Format.add_command(label="Word Wrap")
+Format.add_command(label="Font...", command=fonts)
+
+menubar.add_cascade(label="Format",menu=Format)
+
+
+
+Help = Menu(menubar, tearoff = 0)
+
+Help.add_command(label="View Help",command=view_help)
+Help.add_command(label="Send FeedBack",command=send_feedback)
+Help.add_command(label="About Notepad")
+
+menubar.add_cascade(label="Help",menu=Help)
+
+# ======================== Right Click Menu =========================================
+
+m = Menu(root, tearoff = 0)
+m.add_command(label ="Select All",accelerator="Ctrl+A",command=select_all) 
+m.add_command(label ="Cut",accelerator="Ctrl+X",command=cut) 
+m.add_command(label ="Copy",accelerator="Ctrl+C",command=copy) 
+m.add_command(label ="Paste",accelerator="Ctrl+V",command=paste) 
+m.add_command(label ="Delete",accelerator="Del",command=delete) 
+m.add_separator() 
+m.add_command(label ="Undo",accelerator="Ctrl+Z",command=text.edit_undo)
+m.add_command(label ="Redo",accelerator="Ctrl+Z",command=text.edit_redo) 
+  
+def do_popup(event): 
+    try: 
+        m.tk_popup(event.x_root, event.y_root) 
+    finally: 
+        m.grab_release() 
+  
+root.bind("<Button-3>", do_popup) 
+
+# ==============================================================================
+
+root.config(menu=menubar)
+root.mainloop()
+
+# ========================== End =======================================
